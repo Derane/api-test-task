@@ -36,7 +36,6 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-app}
     volumes:
       - mysql_data:/var/lib/mysql
-      - ./docker/mysql/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
     ports:
       - "${MYSQL_PORT:-3306}:3306"
     healthcheck:

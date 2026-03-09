@@ -104,7 +104,7 @@ test-e2e: ## Run E2E tests only
 	$(PHP) php vendor/bin/phpunit --testsuite E2E
 
 test-setup: ## Create test DB schema and load fixtures
-	$(CONSOLE) doctrine:database:create --env=test --if-not-exists
+	$(COMPOSE) exec mysql mysql -u root -p$${MYSQL_ROOT_PASSWORD:-root} -e "CREATE DATABASE IF NOT EXISTS app_test; GRANT ALL ON app_test.* TO 'app'@'%'; FLUSH PRIVILEGES;"
 	$(CONSOLE) doctrine:schema:create --env=test
 	$(CONSOLE) doctrine:fixtures:load --env=test --no-interaction
 

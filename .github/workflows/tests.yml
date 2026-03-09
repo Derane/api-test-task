@@ -1,0 +1,30 @@
+name: Tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  tests:
+    name: PHPUnit (Docker)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build and start containers
+        run: make setup
+
+      - name: Run migrations
+        run: make migrate
+
+      - name: Setup test database
+        run: make test-setup
+
+      - name: Run unit tests
+        run: make test-unit
+
+      - name: Run E2E tests
+        run: make test-e2e

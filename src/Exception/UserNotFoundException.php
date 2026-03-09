@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Exception;
 
-final class UserNotFoundException extends \RuntimeException
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
+final class UserNotFoundException extends NotFoundHttpException
 {
     public function __construct(int $id)
     {

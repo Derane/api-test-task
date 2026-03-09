@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controller\Api\V1;
 
-use App\DTO\CreateUserDTO;
-use App\DTO\UpdateUserDTO;
+use App\DTO\UserPayloadDTO;
 use App\DTO\UserResponseDTO;
-use App\Entity\User;
 use App\Service\UserServiceInterface;
 use App\Voter\UserVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -28,14 +26,7 @@ final class UserController extends AbstractController
     #[Route('', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        /** @var User $currentUser */
-        $currentUser = $this->getUser();
-
-        if ($currentUser->hasRole('ROLE_ROOT')) {
-            return $this->json($this->userService->list());
-        }
-
-        return $this->json([UserResponseDTO::fromEntity($currentUser)]);
+        return $this->json($this->userService->list($this->getUser()));
     }
 
     #[Route('/{id}', requirements: ['id' => '\d+'], methods: ['GET'])]
@@ -50,15 +41,13 @@ final class UserController extends AbstractController
 
     #[Route('', methods: ['POST'])]
     #[IsGranted(UserVoter::CREATE)]
-    public function create(#[MapRequestPayload] CreateUserDTO $dto): JsonResponse
+    public function create(#[MapRequestPayload] UserPayloadDTO $dto): JsonResponse
     {
-        $response = $this->userService->create($dto);
-
-        return $this->json($response, Response::HTTP_CREATED);
+        return $this->json($this->userService->create($dto), Response::HTTP_CREATED);
     }
 
     #[Route('/{id}', requirements: ['id' => '\d+'], methods: ['PUT'])]
-    public function update(int $id, #[MapRequestPayload] UpdateUserDTO $dto): JsonResponse
+    public function update(int $id, #[MapRequestPayload] UserPayloadDTO $dto): JsonResponse
     {
         $user = $this->userService->findOrFail($id);
 

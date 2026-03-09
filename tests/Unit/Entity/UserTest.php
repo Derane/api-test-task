@@ -12,25 +12,25 @@ final class UserTest extends TestCase
     public function testGetRolesAlwaysIncludesRoleUser(): void
     {
         $user = new User();
-        self::assertContains('ROLE_USER', $user->getRoles());
+        self::assertContains(User::ROLE_USER, $user->getRoles());
     }
 
     public function testGetRolesIncludesAssignedRoles(): void
     {
         $user = new User();
-        $user->setRoles(['ROLE_ROOT']);
+        $user->setRoles([User::ROLE_ROOT]);
 
-        self::assertContains('ROLE_ROOT', $user->getRoles());
-        self::assertContains('ROLE_USER', $user->getRoles());
+        self::assertContains(User::ROLE_ROOT, $user->getRoles());
+        self::assertContains(User::ROLE_USER, $user->getRoles());
     }
 
     public function testHasRole(): void
     {
         $user = new User();
-        $user->setRoles(['ROLE_ROOT']);
+        $user->setRoles([User::ROLE_ROOT]);
 
-        self::assertTrue($user->hasRole('ROLE_ROOT'));
-        self::assertTrue($user->hasRole('ROLE_USER'));
+        self::assertTrue($user->hasRole(User::ROLE_ROOT));
+        self::assertTrue($user->hasRole(User::ROLE_USER));
         self::assertFalse($user->hasRole('ROLE_ADMIN'));
     }
 

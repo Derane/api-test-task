@@ -23,7 +23,7 @@ final class UserFixture extends Fixture
         $root->setPhone('00000000');
         $root->setPassword($this->passwordHasher->hashPassword($root, 'rootpass'));
         $root->setApiToken('root-api-token-for-testing-purposes');
-        $root->setRoles(['ROLE_ROOT']);
+        $root->setRoles([User::ROLE_ROOT]);
         $manager->persist($root);
 
         $user = new User();
@@ -31,7 +31,7 @@ final class UserFixture extends Fixture
         $user->setPhone('11111111');
         $user->setPassword($this->passwordHasher->hashPassword($user, 'userpass'));
         $user->setApiToken('user-api-token-for-testing-purposes');
-        $user->setRoles(['ROLE_USER']);
+        $user->setRoles([User::ROLE_USER]);
         $manager->persist($user);
 
         $manager->flush();

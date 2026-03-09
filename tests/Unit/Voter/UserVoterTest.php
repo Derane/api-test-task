@@ -41,8 +41,8 @@ final class UserVoterTest extends TestCase
 
     public function testRootCanViewAnyUser(): void
     {
-        $root = $this->createUser(1, ['ROLE_ROOT']);
-        $target = $this->createUser(2, ['ROLE_USER']);
+        $root = $this->createUser(1, [User::ROLE_ROOT]);
+        $target = $this->createUser(2, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($root), $target, [UserVoter::VIEW]);
 
@@ -51,8 +51,8 @@ final class UserVoterTest extends TestCase
 
     public function testRootCanEditAnyUser(): void
     {
-        $root = $this->createUser(1, ['ROLE_ROOT']);
-        $target = $this->createUser(2, ['ROLE_USER']);
+        $root = $this->createUser(1, [User::ROLE_ROOT]);
+        $target = $this->createUser(2, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($root), $target, [UserVoter::EDIT]);
 
@@ -61,7 +61,7 @@ final class UserVoterTest extends TestCase
 
     public function testRootCanCreate(): void
     {
-        $root = $this->createUser(1, ['ROLE_ROOT']);
+        $root = $this->createUser(1, [User::ROLE_ROOT]);
 
         $result = $this->voter->vote($this->createToken($root), null, [UserVoter::CREATE]);
 
@@ -70,8 +70,8 @@ final class UserVoterTest extends TestCase
 
     public function testRootCanDeleteAnyUser(): void
     {
-        $root = $this->createUser(1, ['ROLE_ROOT']);
-        $target = $this->createUser(2, ['ROLE_USER']);
+        $root = $this->createUser(1, [User::ROLE_ROOT]);
+        $target = $this->createUser(2, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($root), $target, [UserVoter::DELETE]);
 
@@ -80,7 +80,7 @@ final class UserVoterTest extends TestCase
 
     public function testUserCanViewSelf(): void
     {
-        $user = $this->createUser(1, ['ROLE_USER']);
+        $user = $this->createUser(1, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($user), $user, [UserVoter::VIEW]);
 
@@ -89,8 +89,8 @@ final class UserVoterTest extends TestCase
 
     public function testUserCannotViewOther(): void
     {
-        $user = $this->createUser(1, ['ROLE_USER']);
-        $other = $this->createUser(2, ['ROLE_USER']);
+        $user = $this->createUser(1, [User::ROLE_USER]);
+        $other = $this->createUser(2, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($user), $other, [UserVoter::VIEW]);
 
@@ -99,7 +99,7 @@ final class UserVoterTest extends TestCase
 
     public function testUserCanEditSelf(): void
     {
-        $user = $this->createUser(1, ['ROLE_USER']);
+        $user = $this->createUser(1, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($user), $user, [UserVoter::EDIT]);
 
@@ -108,8 +108,8 @@ final class UserVoterTest extends TestCase
 
     public function testUserCannotEditOther(): void
     {
-        $user = $this->createUser(1, ['ROLE_USER']);
-        $other = $this->createUser(2, ['ROLE_USER']);
+        $user = $this->createUser(1, [User::ROLE_USER]);
+        $other = $this->createUser(2, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($user), $other, [UserVoter::EDIT]);
 
@@ -118,7 +118,7 @@ final class UserVoterTest extends TestCase
 
     public function testUserCannotCreate(): void
     {
-        $user = $this->createUser(1, ['ROLE_USER']);
+        $user = $this->createUser(1, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($user), null, [UserVoter::CREATE]);
 
@@ -127,7 +127,7 @@ final class UserVoterTest extends TestCase
 
     public function testUserCannotDelete(): void
     {
-        $user = $this->createUser(1, ['ROLE_USER']);
+        $user = $this->createUser(1, [User::ROLE_USER]);
 
         $result = $this->voter->vote($this->createToken($user), $user, [UserVoter::DELETE]);
 
@@ -136,7 +136,7 @@ final class UserVoterTest extends TestCase
 
     public function testUnauthenticatedUserDenied(): void
     {
-        $target = $this->createUser(1, ['ROLE_USER']);
+        $target = $this->createUser(1, [User::ROLE_USER]);
         $token = $this->createMock(TokenInterface::class);
         $token->method('getUser')->willReturn(null);
 

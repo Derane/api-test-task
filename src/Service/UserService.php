@@ -4,15 +4,13 @@ declare(strict_types=1);
 
 namespace App\Service;
 
-use App\DTO\CreateUserDTO;
-use App\DTO\UpdateUserDTO;
+use App\DTO\UserPayloadDTO;
 use App\DTO\UserResponseDTO;
 use App\Entity\User;
 use App\Exception\UserNotFoundException;
 use App\Factory\UserFactoryInterface;
 use App\Repository\UserRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final readonly class UserService implements UserServiceInterface
 {
@@ -20,16 +18,17 @@ final readonly class UserService implements UserServiceInterface
         private EntityManagerInterface $em,
         private UserRepositoryInterface $userRepository,
         private UserFactoryInterface $userFactory,
-        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
     /** @inheritDoc */
-    public function list(): array
+    public function list(User $currentUser): array
     {
-        $users = $this->userRepository->findAll();
+        if ($currentUser->hasRole(User::ROLE_ROOT)) {
+            return array_map(UserResponseDTO::fromEntity(...), $this->userRepository->findAll());
+        }
 
-        return array_map(UserResponseDTO::fromEntity(...), $users);
+        return [UserResponseDTO::fromEntity($currentUser)];
     }
 
     public function findOrFail(int $id): User
@@ -38,7 +37,7 @@ final readonly class UserService implements UserServiceInterface
             ?? throw new UserNotFoundException($id);
     }
 
-    public function create(CreateUserDTO $dto): UserResponseDTO
+    public function create(UserPayloadDTO $dto): UserResponseDTO
     {
         $user = $this->userFactory->create($dto);
 
@@ -48,11 +47,9 @@ final readonly class UserService implements UserServiceInterface
         return UserResponseDTO::fromEntity($user);
     }
 
-    public function update(User $user, UpdateUserDTO $dto): UserResponseDTO
+    public function update(User $user, UserPayloadDTO $dto): UserResponseDTO
     {
-        $user->setLogin($dto->login);
-        $user->setPhone($dto->phone);
-        $user->setPassword($this->passwordHasher->hashPassword($user, $dto->pass));
+        $this->userFactory->update($user, $dto);
 
         $this->em->flush();
 

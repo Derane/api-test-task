@@ -22,7 +22,7 @@ CREATE TABLE `doctrine_migration_versions` (
 
 LOCK TABLES `doctrine_migration_versions` WRITE;
 /*!40000 ALTER TABLE `doctrine_migration_versions` DISABLE KEYS */;
-INSERT INTO `doctrine_migration_versions` VALUES ('DoctrineMigrations\\Version20260308222435','2026-03-08 22:24:46',59);
+INSERT INTO `doctrine_migration_versions` VALUES ('DoctrineMigrations\\Version20260308222435','2026-03-08 22:24:46',59),('DoctrineMigrations\\Version20260309104743','2026-03-09 10:47:50',17);
 /*!40000 ALTER TABLE `doctrine_migration_versions` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `users`;
@@ -37,8 +37,7 @@ CREATE TABLE `users` (
   `roles` json NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `UNIQ_1483A5E9AA08CB10` (`login`),
-  UNIQUE KEY `UNIQ_1483A5E97BA2F5EB` (`api_token`),
-  UNIQUE KEY `uq_login_password` (`login`,`password`)
+  UNIQUE KEY `UNIQ_1483A5E97BA2F5EB` (`api_token`)
 ) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 

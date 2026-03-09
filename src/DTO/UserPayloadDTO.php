@@ -6,7 +6,7 @@ namespace App\DTO;
 
 use Symfony\Component\Validator\Constraints as Assert;
 
-final readonly class UpdateUserDTO
+final readonly class UserPayloadDTO
 {
     public function __construct(
         #[Assert\NotBlank(message: 'Login is required.')]

@@ -11,9 +11,11 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: 'users')]
-#[ORM\UniqueConstraint(name: 'uq_login_password', columns: ['login', 'password'])]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    public const ROLE_ROOT = 'ROLE_ROOT';
+    public const ROLE_USER = 'ROLE_USER';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -90,7 +92,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getRoles(): array
     {
         $roles = $this->roles;
-        $roles[] = 'ROLE_USER';
+        $roles[] = self::ROLE_USER;
 
         return array_unique($roles);
     }

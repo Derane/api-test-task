@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Exception\UserNotFoundException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -34,7 +33,6 @@ final readonly class ExceptionSubscriber implements EventSubscriberInterface
     {
         return match (true) {
             $exception instanceof HttpExceptionInterface => $this->handleHttpException($exception),
-            $exception instanceof UserNotFoundException => $this->jsonError(Response::HTTP_NOT_FOUND, $exception->getMessage()),
             $exception instanceof UniqueConstraintViolationException => $this->jsonError(Response::HTTP_CONFLICT, 'Duplicate entry. A user with this data already exists.'),
             default => $this->jsonError(Response::HTTP_INTERNAL_SERVER_ERROR, 'Internal server error.'),
         };

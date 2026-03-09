@@ -34,7 +34,7 @@ final class UserVoter extends Voter
             return false;
         }
 
-        if ($currentUser->hasRole('ROLE_ROOT')) {
+        if ($currentUser->hasRole(User::ROLE_ROOT)) {
             return true;
         }
 

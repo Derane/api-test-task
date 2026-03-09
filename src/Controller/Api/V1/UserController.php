@@ -8,7 +8,7 @@ use App\DTO\CreateUserDTO;
 use App\DTO\UpdateUserDTO;
 use App\DTO\UserResponseDTO;
 use App\Entity\User;
-use App\Service\UserService;
+use App\Service\UserServiceInterface;
 use App\Voter\UserVoter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class UserController extends AbstractController
 {
     public function __construct(
-        private readonly UserService $userService,
+        private readonly UserServiceInterface $userService,
     ) {
     }
 
@@ -38,7 +38,7 @@ final class UserController extends AbstractController
         return $this->json([UserResponseDTO::fromEntity($currentUser)]);
     }
 
-    #[Route('/{id}', methods: ['GET'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', requirements: ['id' => '\d+'], methods: ['GET'])]
     public function show(int $id): JsonResponse
     {
         $user = $this->userService->findOrFail($id);
@@ -57,7 +57,7 @@ final class UserController extends AbstractController
         return $this->json($response, Response::HTTP_CREATED);
     }
 
-    #[Route('/{id}', methods: ['PUT'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', requirements: ['id' => '\d+'], methods: ['PUT'])]
     public function update(int $id, #[MapRequestPayload] UpdateUserDTO $dto): JsonResponse
     {
         $user = $this->userService->findOrFail($id);
@@ -67,7 +67,7 @@ final class UserController extends AbstractController
         return $this->json($this->userService->update($user, $dto));
     }
 
-    #[Route('/{id}', methods: ['DELETE'], requirements: ['id' => '\d+'])]
+    #[Route('/{id}', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     public function delete(int $id): JsonResponse
     {
         $user = $this->userService->findOrFail($id);

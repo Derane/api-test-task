@@ -8,22 +8,23 @@ use App\DTO\CreateUserDTO;
 use App\DTO\UpdateUserDTO;
 use App\DTO\UserResponseDTO;
 use App\Entity\User;
-use App\Repository\UserRepository;
+use App\Exception\UserNotFoundException;
+use App\Factory\UserFactoryInterface;
+use App\Repository\UserRepositoryInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final readonly class UserService
+final readonly class UserService implements UserServiceInterface
 {
     public function __construct(
         private EntityManagerInterface $em,
-        private UserRepository $userRepository,
+        private UserRepositoryInterface $userRepository,
+        private UserFactoryInterface $userFactory,
         private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
-    /**
-     * @return UserResponseDTO[]
-     */
+    /** @inheritDoc */
     public function list(): array
     {
         $users = $this->userRepository->findAll();
@@ -33,23 +34,13 @@ final readonly class UserService
 
     public function findOrFail(int $id): User
     {
-        $user = $this->userRepository->find($id);
-
-        if (null === $user) {
-            throw new \DomainException('User not found.', 404);
-        }
-
-        return $user;
+        return $this->userRepository->findById($id)
+            ?? throw new UserNotFoundException($id);
     }
 
     public function create(CreateUserDTO $dto): UserResponseDTO
     {
-        $user = new User();
-        $user->setLogin($dto->login);
-        $user->setPhone($dto->phone);
-        $user->setPassword($this->passwordHasher->hashPassword($user, $dto->pass));
-        $user->setApiToken(bin2hex(random_bytes(32)));
-        $user->setRoles(['ROLE_USER']);
+        $user = $this->userFactory->create($dto);
 
         $this->em->persist($user);
         $this->em->flush();

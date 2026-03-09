@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Exception\UserNotFoundException;
 use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -13,7 +14,7 @@ use Symfony\Component\HttpKernel\Exception\HttpExceptionInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Validator\Exception\ValidationFailedException;
 
-final class ExceptionSubscriber implements EventSubscriberInterface
+final readonly class ExceptionSubscriber implements EventSubscriberInterface
 {
     public static function getSubscribedEvents(): array
     {
@@ -24,53 +25,33 @@ final class ExceptionSubscriber implements EventSubscriberInterface
 
     public function onKernelException(ExceptionEvent $event): void
     {
-        $exception = $event->getThrowable();
-        $response = $this->buildResponse($exception);
-
-        $event->setResponse($response);
+        $event->setResponse(
+            $this->buildResponse($event->getThrowable()),
+        );
     }
 
     private function buildResponse(\Throwable $exception): JsonResponse
     {
-        if ($exception instanceof HttpExceptionInterface) {
-            return $this->handleHttpException($exception);
-        }
-
-        if ($exception instanceof \DomainException) {
-            $code = $exception->getCode() ?: Response::HTTP_BAD_REQUEST;
-
-            return new JsonResponse(
-                ['code' => $code, 'message' => $exception->getMessage()],
-                $code,
-            );
-        }
-
-        if ($exception instanceof UniqueConstraintViolationException) {
-            return new JsonResponse(
-                ['code' => Response::HTTP_CONFLICT, 'message' => 'Duplicate entry. A user with this data already exists.'],
-                Response::HTTP_CONFLICT,
-            );
-        }
-
-        return new JsonResponse(
-            ['code' => Response::HTTP_INTERNAL_SERVER_ERROR, 'message' => 'Internal server error.'],
-            Response::HTTP_INTERNAL_SERVER_ERROR,
-        );
+        return match (true) {
+            $exception instanceof HttpExceptionInterface => $this->handleHttpException($exception),
+            $exception instanceof UserNotFoundException => $this->jsonError(Response::HTTP_NOT_FOUND, $exception->getMessage()),
+            $exception instanceof UniqueConstraintViolationException => $this->jsonError(Response::HTTP_CONFLICT, 'Duplicate entry. A user with this data already exists.'),
+            default => $this->jsonError(Response::HTTP_INTERNAL_SERVER_ERROR, 'Internal server error.'),
+        };
     }
 
     private function handleHttpException(HttpExceptionInterface $exception): JsonResponse
     {
         $statusCode = $exception->getStatusCode();
-        $message = $exception->getMessage();
-
         $previous = $exception->getPrevious();
+
         if ($previous instanceof ValidationFailedException) {
             return $this->handleValidationException($previous, $statusCode);
         }
 
-        return new JsonResponse(
-            ['code' => $statusCode, 'message' => $message ?: Response::$statusTexts[$statusCode] ?? 'Error'],
+        return $this->jsonError(
             $statusCode,
+            $exception->getMessage() ?: Response::$statusTexts[$statusCode] ?? 'Error',
         );
     }
 
@@ -84,12 +65,13 @@ final class ExceptionSubscriber implements EventSubscriberInterface
         }
 
         return new JsonResponse(
-            [
-                'code' => $statusCode,
-                'message' => 'Validation failed.',
-                'errors' => $errors,
-            ],
+            ['code' => $statusCode, 'message' => 'Validation failed.', 'errors' => $errors],
             $statusCode,
         );
+    }
+
+    private function jsonError(int $code, string $message): JsonResponse
+    {
+        return new JsonResponse(['code' => $code, 'message' => $message], $code);
     }
 }

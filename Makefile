@@ -4,7 +4,9 @@
         install setup composer \
         cache-clear \
         doctrine-install migrate schema-create schema-update schema-validate \
-        doctrine-check
+        doctrine-check fixtures \
+        test test-unit test-e2e test-setup \
+        dump dump-import
 
 COMPOSE  = docker compose
 PHP      = $(COMPOSE) exec php
@@ -87,3 +89,30 @@ schema-validate: ## Validate that schema matches entities
 
 doctrine-check: ## Check database connection
 	$(CONSOLE) doctrine:query:sql "SELECT 1"
+
+fixtures: ## Load data fixtures (root + user)
+	$(CONSOLE) doctrine:fixtures:load --no-interaction
+
+##——— Tests ——————————————————————————————————————————————————————————————————
+test: ## Run all tests
+	$(PHP) php vendor/bin/phpunit
+
+test-unit: ## Run unit tests only
+	$(PHP) php vendor/bin/phpunit --testsuite Unit
+
+test-e2e: ## Run E2E tests only
+	$(PHP) php vendor/bin/phpunit --testsuite E2E
+
+test-setup: ## Create test DB schema and load fixtures
+	$(CONSOLE) doctrine:database:create --env=test --if-not-exists
+	$(CONSOLE) doctrine:schema:create --env=test
+	$(CONSOLE) doctrine:fixtures:load --env=test --no-interaction
+
+##——— Database Dump ——————————————————————————————————————————————————————————
+dump: ## Export database dump to dump.sql
+	$(COMPOSE) exec mysql mysqldump -u $${MYSQL_USER:-app} -p$${MYSQL_PASSWORD:-app} $${MYSQL_DATABASE:-app} --no-tablespaces --skip-comments > dump.sql
+	@printf "$(GREEN)Dump saved to dump.sql$(RESET)\n"
+
+dump-import: ## Import dump.sql into database
+	$(COMPOSE) exec -T mysql mysql -u $${MYSQL_USER:-app} -p$${MYSQL_PASSWORD:-app} $${MYSQL_DATABASE:-app} < dump.sql
+	@printf "$(GREEN)Dump imported successfully$(RESET)\n"
